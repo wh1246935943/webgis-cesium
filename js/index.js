@@ -1,14 +1,17 @@
 let infoBoxXY = {};
 
 Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiMTFmODBlNS1kMDBjLTQxMDktYmJiNi0yYTQ5YmIyZDI5MDQiLCJpZCI6MTEyODY4LCJpYXQiOjE2NjcwNTM3MzR9.uAXnM4bVfiIeISP0Jko7GK9fKEUFmxh6A2ATK6mUGyc'
+
 var viewer = new Cesium.Viewer('cesiumContainer', {
 	infoBox: false,
 });
 
+viewer.scene.globe.depthTestAgainstTerrain = true;
+
 // 加载倾斜摄影
 var tileset = new Cesium.Cesium3DTileset({
 	//相对路径，我这里是放的根目录
-	url: 'http://localhost:9003/model/tXeKt0vKE/tileset.json',
+	url: 'http://localhost:9003/model/tV3r5phCS/tileset.json',
 	preferLeaves: true,
 	//【重要】内存建议显存大小的50%左右，内存分配变小有利于倾斜摄影数据回收，提升性能体验
 	maximumMemoryUsage: 1500,
@@ -22,25 +25,22 @@ var tileset = viewer.scene.primitives.add(tileset);
 //定位过去
 viewer.zoomTo(tileset);
 
-
-
 tileset.readyPromise.then(tileset => {
 	console.log(tileset)
-	//
+	// //
 	let surface = Cesium.Cartesian3.fromRadians(0, 0, 0);
-	//模型改变的位置
-	let offset = Cesium.Cartesian3.fromRadians(0, 0, 580);
-	//定义模型的改变状态
+	// //模型改变的位置
+	let offset = Cesium.Cartesian3.fromRadians(0, 0, 565);
+	// //定义模型的改变状态
 	let translation = Cesium.Cartesian3.subtract(offset, surface, new Cesium.Cartesian3());
 
 	tileset.modelMatrix = Cesium.Matrix4.fromTranslation(translation)
 
-	viewer.zoomTo(tileset, new Cesium.HeadingPitchRange(0.5, -0.2, tileset.boundingSphere.radius * 1.0));
+	viewer.zoomTo(tileset, new Cesium.HeadingPitchRange(1, -0.2, tileset.boundingSphere.radius * 1.0));
 
 }).catch(function (error) {
 	console.log(error);
 });
-
 
 var canvas = viewer.scene.canvas;
 var handler = new Cesium.ScreenSpaceEventHandler(canvas);
