@@ -4,6 +4,7 @@
  * 视图做标为该控件坐标所处的视图位置到视图容器的左上角的屏幕坐标，以像素为单位
  */
 var infoBoxXYZ = {};
+var cameraState = {};
 /**
  * 添加用户凭证
  * 该凭证来自用户的cseium账户的开发者中心
@@ -13,7 +14,7 @@ Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOi
  * 生成视图容器对象
  */
 var viewer = new Cesium.Viewer('cesiumContainer', {
-	infoBox: false,
+	infoBox: false
 });
 // 开启深度检测
 viewer.scene.globe.depthTestAgainstTerrain = true;
@@ -25,7 +26,7 @@ viewer.scene.globe.depthTestAgainstTerrain = true;
  */
 var tileset = new Cesium.Cesium3DTileset({
 	//相对路径，我这里是放的根目录
-	url: 'http://localhost:9003/model/tV3r5phCS/tileset.json',
+	url: 'http://localhost:9003/model/tCj2gq0sz/tileset.json',
 	preferLeaves: true,
 	maximumMemoryUsage: 1500,
 	cullWithChildrenBounds: true,
@@ -41,10 +42,14 @@ viewer.scene.primitives.add(tileset);
  */
 viewer.zoomTo(tileset);
 /**
+ * 记录摄像机状态
+ */
+/**
  * 调整模型高度，使其贴合地面
  */
 tileset.readyPromise.then(tileset => {
-	changeHeight(16)
+	changeHeight(13)
+	cameraState = getCameraState();
 }).catch(function (error) {});
 /**
  * 拿到场景的渲染的容器
@@ -76,3 +81,39 @@ viewer.scene.postRender.addEventListener(function (e) {
 	boxs.style.left = winpos.x + 'px';
 	boxs.style.top = winpos.y + 'px';
 });
+/**
+ * 设置相机状态
+ */
+function setCameraState(state) {
+	viewer.camera.setView({
+		destination: state.position,
+		orientation: {
+			heading: state.heading,
+			pitch: state.pitch,
+			roll: state.roll
+		}
+	});
+}
+/**
+ * 设置视觉角度2D、3D
+ */
+ async function transTo3D() {
+	const { mode } = viewer.scene;
+	if (mode === Cesium.SceneMode.SCENE2D) {
+		await viewer.scene.morphTo3D(0);
+		tileset.show = true;
+		setCameraState(cameraState);
+		viewer.zoomTo(tileset);
+	} else if (mode === Cesium.SceneMode.SCENE3D) {
+		await viewer.scene.morphTo2D(1);
+		await viewer.zoomTo(tileset);
+		viewer.camera.zoomOut(1000);
+		tileset.show = false;
+	}
+	// setCameraState({
+	// 	position: Cesium.Cartesian3.fromDegrees(cameraState.lon, cameraState.lat),
+	// 	heading: Cesium.Math.toRadians(0),
+	// 	pitch: Cesium.Math.toRadians(-90),
+	// 	roll: 100.0
+	// });
+};
